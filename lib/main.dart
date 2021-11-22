@@ -91,10 +91,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget getRow(int position){
    var city, temperature, status, humidity, windSpeed,
-       maxTemp, minTemp;
+       maxTemp, minTemp, latitude, longitude;
    String cityName, tempString, statusString, humidityString, windSpeedString,
-    maxTempString, minTempString;
+    maxTempString, minTempString, latString, lonString;
    int tempInInt = 0, minTempInInt = 0, maxTempInInt = 0;
+   double latDouble = 0.0, lonDouble = 0.0;
    cityName = "Loading...";
    tempString = "Loading...";
    statusString = "Loading...";
@@ -123,6 +124,10 @@ class _MyHomePageState extends State<MyHomePage> {
      maxTemp = results["list"][position]["main"]["temp_max"];
      minTemp = results["list"][position]["main"]["temp_min"];
 
+     latitude = results["list"][position]["coord"]["lat"];
+     longitude = results["list"][position]["coord"]["lon"];
+
+
      cityName = city.toString();
      tempString = temperature.toString();
      statusString = status.toString();
@@ -131,6 +136,9 @@ class _MyHomePageState extends State<MyHomePage> {
      windSpeedString = windSpeed.toString();
      maxTempString = maxTemp.toString();
      minTempString = minTemp.toString();
+
+     latString = latitude.toString();
+     lonString = longitude.toString();
 
 
       double tempInDouble = double.parse(tempString) - 273.15;
@@ -141,6 +149,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
      double maxTempInDouble = double.parse(maxTempString) - 273.15;
      maxTempInInt = maxTempInDouble.round();
+
+     latDouble = double.parse(latString);
+     lonDouble = double.parse(lonString);
 
    }
      // return Container(
@@ -173,7 +184,8 @@ class _MyHomePageState extends State<MyHomePage> {
         var route = MaterialPageRoute(
           builder: (BuildContext context) => MapView(cityName: cityName,
           status: statusString, humidity: humidityString, windSpeed: windSpeedString,
-          temp: tempInInt, maxTemp: maxTempInInt, minTemp: minTempInInt,),
+          temp: tempInInt, maxTemp: maxTempInInt, minTemp: minTempInInt,
+          latitude: latDouble, longitude: lonDouble,),
         );
         Navigator.of(context).push(route);
       },
