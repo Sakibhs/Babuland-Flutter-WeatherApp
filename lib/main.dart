@@ -1,8 +1,15 @@
+import 'dart:convert';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:weather_app/map_view.dart';
+import 'package:weather_app/splash.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
 }
+//Degree Symbol "\u00B0"
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -12,6 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -24,7 +32,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: Splash(),
     );
   }
 }
@@ -48,68 +56,149 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  var results;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  Future getWeather() async{
+    var url = Uri.parse('http://api.openweathermap.org/data/2.5/find?lat=23.68&lon=90.35&cnt=50&appid=e384f9ac095b2109c751d95296f8ea76');
+    http.Response response = await http.get(url);
+    results = jsonDecode(response.body);
+  }
+
+  @override
+  void initState(){
+    print("Hello");
+    getWeather();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
+        backgroundColor: Color(0xff00804A),
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+      body: Container(
+        child: ListView.builder(
+          itemCount: 50,
+            itemBuilder: (BuildContext context, int position){
+              return getRow(position);
+            },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+
+  Widget getRow(int position){
+   var city, temperature, status, humidity, windSpeed,
+       maxTemp, minTemp;
+   String cityName, tempString, statusString, humidityString, windSpeedString,
+    maxTempString, minTempString;
+   int tempInInt = 0, minTempInInt = 0, maxTempInInt = 0;
+   cityName = "Loading...";
+   tempString = "Loading...";
+   statusString = "Loading...";
+
+   humidityString = "Loading...";
+   windSpeedString = "Loading...";
+   maxTempString = "Loading...";
+   minTempString = "Loading...";
+
+   if(results==null) {
+     Future.delayed(const Duration(milliseconds: 1500), () {
+      setState(() {
+
+      });
+
+     });
+
+   }
+   else{
+     city = results["list"][position]["name"];
+     temperature = results["list"][position]["main"]["temp"];
+     status = results["list"][position]["weather"][0]["main"];
+
+     humidity = results["list"][position]["main"]["humidity"];
+     windSpeed = results["list"][position]["wind"]["speed"];
+     maxTemp = results["list"][position]["main"]["temp_max"];
+     minTemp = results["list"][position]["main"]["temp_min"];
+
+     cityName = city.toString();
+     tempString = temperature.toString();
+     statusString = status.toString();
+
+     humidityString = humidity.toString();
+     windSpeedString = windSpeed.toString();
+     maxTempString = maxTemp.toString();
+     minTempString = minTemp.toString();
+
+
+      double tempInDouble = double.parse(tempString) - 273.15;
+      tempInInt = tempInDouble.round();
+
+     double minTempInDouble = double.parse(minTempString) - 273.15;
+     minTempInInt = minTempInDouble.round();
+
+     double maxTempInDouble = double.parse(maxTempString) - 273.15;
+     maxTempInInt = maxTempInDouble.round();
+
+   }
+     // return Container(
+     //   padding: const EdgeInsets.symmetric(
+     //     vertical: 10.0,
+     //     horizontal: 5.0,
+     //   ),
+     //   child: Column(
+     //     children: [
+     //       new Align (child: new Text(cityName,
+     //         style: new TextStyle(fontSize: 24.0),), //so big text
+     //         alignment: FractionalOffset.topLeft,),
+     //       new Align (child: new Text(
+     //        "$tempInInt"+"\u00B0"+"c"
+     //       ),
+     //         alignment: FractionalOffset.centerRight,),
+     //       new Align (child: new Text(statusString,
+     //       style: TextStyle(
+     //         color: Color(0xff6a5959),
+     //       ),),
+     //         alignment: FractionalOffset.topLeft,),
+     //       new Divider (color: Color(0xffcccccc),),
+     //     ],
+     //   ),
+     // );
+
+
+    return GestureDetector(
+      onTap: (){
+        var route = MaterialPageRoute(
+          builder: (BuildContext context) => MapView(cityName: cityName,
+          status: statusString, humidity: humidityString, windSpeed: windSpeedString,
+          temp: tempInInt, maxTemp: maxTempInInt, minTemp: minTempInInt,),
+        );
+        Navigator.of(context).push(route);
+      },
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(cityName),
+            subtitle: Text(statusString),
+            trailing: Wrap(
+              children: [
+              Text(
+                "$tempInInt"+"\u00B0"+"c",
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    ),
+              ],
+            ),
+          ),
+          Divider(color: Color(0xffcccccc)),
+        ],
+      ),
+    );
+  }
+
+
 }
